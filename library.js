@@ -53,14 +53,14 @@
 			requestTokenURL: '',
 			accessTokenURL: '',
 			userAuthorizationURL: '',
-			consumerKey: nconf.get('oauth:key'),	// don't change this line
-			consumerSecret: nconf.get('oauth:secret'),	// don't change this line
+			consumerKey: process.env.NODEBB_CONSUMER_KEY,
+			consumerSecret: process.env.NODEBB_CONSUMER_SECRET,	
 		},
 		oauth2: {
 			authorizationURL: process.env.NODEBB_AUTHORIZATION_URL,
 			tokenURL: process.env.NODEBB_TOKEN_URL,
-			clientID: nconf.get('oauth:id'),	// don't change this line
-			clientSecret: nconf.get('oauth:secret'),	// don't change this line
+			clientID: process.env.NODEBB_CLIENT_ID, 
+			clientSecret: process.env.NODEBB_CLIENT_SECRET,
 		},
 		userRoute: process.env.NODEBB_PROFILE_URL,	// This is the address to your app's "user profile" API endpoint (expects JSON)
 	});
