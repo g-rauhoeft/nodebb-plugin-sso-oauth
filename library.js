@@ -155,7 +155,7 @@
 			strategies.push({
 				name: constants.name,
 				url: '/auth/' + constants.name,
-				callbackURL: '/auth/' + constants.name + '/callback',
+				callbackURL: opts.callbackURL,
 				icon: 'fa-check-square',
 				scope: (constants.scope || '').split(','),
 			});
