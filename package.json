@@ -29,6 +29,7 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "async": "^2.6.1",
+    "jsonwebtoken": "^8.4.0",
     "passport-oauth": "~1.0.0",
     "passport-oauth2": "^1.4.0"
   },

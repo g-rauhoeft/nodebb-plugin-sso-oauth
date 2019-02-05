@@ -118,6 +118,7 @@
 					email: profile.email,
 					isAdmin: false, //profile.isAdmin,
 				}, function (err, user) {
+					console.log(err, user);
 					if (err) {
 						return done(err);
 					}
