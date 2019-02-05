@@ -101,7 +101,7 @@
 
 	if (!constants.name) {
 		winston.error('[sso-oauth] Please specify a name for your OAuth provider (library.js:32)');
-	} else if (!constants.userRoute) {
+	} else if (!constants.userProfileURL) {
 		winston.error('[sso-oauth] User Route required (library.js:31)');
 	} else {
 		configOk = true;
