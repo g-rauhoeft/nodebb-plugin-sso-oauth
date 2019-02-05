@@ -111,7 +111,7 @@
 		if (configOk) {
 
 			passport.use(constants.name, new Strategy(constants.oauth2, function (req, token, secret, profile, done) {
-				winston.log(profile);
+				windston.info(JSON.stringify(profile));
 				OAuth.login({
 					oAuthid: profile.id,
 					handle: profile.displayName,
