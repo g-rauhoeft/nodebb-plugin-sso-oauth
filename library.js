@@ -1,6 +1,61 @@
 'use strict';
 
 (function (module) {
+	const OAuth2Strategy = require('passport-oauth2'),
+		util = require('util');
+
+	function Strategy(options, verify) {
+		options = options || {};
+		options.realm = options.realm || 'master';
+		options.authorizationURL = options.authorizationURL || `auth/realms/${options.realm}/protocol/openid-connect/auth`;
+		options.tokenURL = options.tokenURL || `auth/realms/${options.realm}/protocol/openid-connect/token`;
+		options.logoutURL = options.logoutURL || `auth/realms/${options.realm}/protocol/openid-connect/logout`;
+		options.clientID = options.clientID || 'account';
+		options.scopeSeparator = options.scopeSeparator || ',';
+		options.customHeaders = options.customHeaders || {};
+
+		if (!options.customHeaders['User-Agent']) {
+			options.customHeaders['User-Agent'] = options.userAgent || 'passport-keycloak';
+		}
+
+		OAuth2Strategy.call(this, options, verify);
+		this.name = 'keycloak';
+		this._userProfileURL = options.userProfileURL || `auth/realms/${options.realm}/protocol/openid-connect/userinfo`;
+		this._oauth2.useAuthorizationHeaderforGET(true);
+	}
+
+	util.inherits(Strategy, OAuth2Strategy);
+
+	Strategy.prototype.userProfile = function (accessToken, done) {
+		this._oauth2.get(this._userProfileURL, accessToken, function (err, body, res) {
+			var json;
+
+			if (err) {
+				if (err.data) {
+					try {
+						json = JSON.parse(err.data);
+					} catch (_) {}
+				}
+
+				if (json && json.message) {
+					return done(json.message);
+				}
+				return done('Failed to fetch user profile', err);
+			}
+
+			try {
+				json = JSON.parse(body);
+			} catch (ex) {
+				return done('Failed to parse user profile', ex);
+			}
+
+			var profile = json;
+			profile.provider = 'keycloak';
+
+			done(null, profile);
+		});
+	}
+
 	/*
 		Welcome to the SSO OAuth plugin! If you're inspecting this code, you're probably looking to
 		hook up NodeBB with your existing OAuth endpoint.
@@ -22,21 +77,20 @@
 	const authenticationController = require.main.require('./src/controllers/authentication');
 
 	const async = require('async');
-	const Strategy = require('./strategy');
 
 	const passport = module.parent.require('passport');
 	const nconf = module.parent.require('nconf');
 	const winston = module.parent.require('winston');
 
 	const constants = Object.freeze({
-		name: 'keycloak',	
+		name: 'keycloak',
 		oauth2: {
 			authorizationURL: process.env.NODEBB_AUTHORIZATION_URL,
 			tokenURL: process.env.NODEBB_TOKEN_URL,
-			clientID: process.env.NODEBB_CLIENT_ID, 
+			clientID: process.env.NODEBB_CLIENT_ID,
 			clientSecret: process.env.NODEBB_CLIENT_SECRET,
 		},
-		userRoute: process.env.NODEBB_PROFILE_URL,	
+		userRoute: process.env.NODEBB_PROFILE_URL,
 	});
 
 	const OAuth = {};
@@ -97,7 +151,9 @@
 		var profile = {};
 		profile.id = data.id;
 		profile.displayName = data.name;
-		profile.emails = [{ value: data.email }];
+		profile.emails = [{
+			value: data.email
+		}];
 
 		// Do you want to automatically make somebody an admin? This line might help you do that...
 		// profile.isAdmin = data.isAdmin ? true : false;
@@ -177,9 +233,9 @@
 	OAuth.deleteUserData = function (data, callback) {
 		async.waterfall([
 			async.apply(User.getUserField, data.uid, constants.name + 'Id'),
-			function (oAuthIdToDelete, next) {
-				db.deleteObjectField(constants.name + 'Id:uid', oAuthIdToDelete, next);
-			},
+				function (oAuthIdToDelete, next) {
+					db.deleteObjectField(constants.name + 'Id:uid', oAuthIdToDelete, next);
+				},
 		], function (err) {
 			if (err) {
 				winston.error('[sso-oauth] Could not remove OAuthId data for uid ' + data.uid + '. Error: ' + err);
