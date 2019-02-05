@@ -11,6 +11,7 @@
 		options.tokenURL = options.tokenURL || `auth/realms/${options.realm}/protocol/openid-connect/token`;
 		options.logoutURL = options.logoutURL || `auth/realms/${options.realm}/protocol/openid-connect/logout`;
 		options.clientID = options.clientID || 'account';
+		options.callbackURL = options.callbackURL || '/auth/keycloak/callback';
 		options.scopeSeparator = options.scopeSeparator || ',';
 		options.customHeaders = options.customHeaders || {};
 
@@ -89,8 +90,10 @@
 			tokenURL: process.env.NODEBB_TOKEN_URL,
 			clientID: process.env.NODEBB_CLIENT_ID,
 			clientSecret: process.env.NODEBB_CLIENT_SECRET,
-		},
-		userRoute: process.env.NODEBB_PROFILE_URL,
+			realm: process.env.NODEBB_REALM,
+			callbackURL: process.env.NODEBB_CALLBACK_URL,
+			userProfileURL: process.env.NODEBB_PROFILE_URL
+		}
 	});
 
 	const OAuth = {};
