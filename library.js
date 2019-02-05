@@ -120,11 +120,11 @@
 				}, function (err, user) {
 					console.log(err, user);
 					if (err) {
-						return done(err);
+						return callback(err);
 					}
 					console.log(user);
 					//authenticationController.onSuccessfulLogin(req, user.uid);
-					done(null, user);
+					callback(null, user);
 				});
 			}, function(req, res){
 				console.log("Called next function", req, res);
