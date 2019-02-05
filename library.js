@@ -22,58 +22,29 @@
 	const authenticationController = require.main.require('./src/controllers/authentication');
 
 	const async = require('async');
+	const Strategy = require('./strategy');
 
 	const passport = module.parent.require('passport');
 	const nconf = module.parent.require('nconf');
 	const winston = module.parent.require('winston');
 
-	/**
-	 * REMEMBER
-	 *   Never save your OAuth Key/Secret or OAuth2 ID/Secret pair in code! It could be published and leaked accidentally.
-	 *   Save it into your config.json file instead:
-	 *
-	 *   {
-	 *     ...
-	 *     "oauth": {
-	 *       "id": "someoauthid",
-	 *       "secret": "youroauthsecret"
-	 *     }
-	 *     ...
-	 *   }
-	 *
-	 *   ... or use environment variables instead:
-	 *
-	 *   `OAUTH__ID=someoauthid OAUTH__SECRET=youroauthsecret node app.js`
-	 */
-
 	const constants = Object.freeze({
-		type: 'oauth2',	// Either 'oauth' or 'oauth2'
-		name: 'keycloak',	// Something unique to your OAuth provider in lowercase, like "github", or "nodebb"
-		oauth: {
-			requestTokenURL: '',
-			accessTokenURL: '',
-			userAuthorizationURL: '',
-			consumerKey: process.env.NODEBB_CONSUMER_KEY,
-			consumerSecret: process.env.NODEBB_CONSUMER_SECRET,	
-		},
+		name: 'keycloak',	
 		oauth2: {
 			authorizationURL: process.env.NODEBB_AUTHORIZATION_URL,
 			tokenURL: process.env.NODEBB_TOKEN_URL,
 			clientID: process.env.NODEBB_CLIENT_ID, 
 			clientSecret: process.env.NODEBB_CLIENT_SECRET,
 		},
-		userRoute: process.env.NODEBB_PROFILE_URL,	// This is the address to your app's "user profile" API endpoint (expects JSON)
+		userRoute: process.env.NODEBB_PROFILE_URL,	
 	});
 
 	const OAuth = {};
 	let configOk = false;
-	let passportOAuth;
 	let opts;
 
 	if (!constants.name) {
 		winston.error('[sso-oauth] Please specify a name for your OAuth provider (library.js:32)');
-	} else if (!constants.type || (constants.type !== 'oauth' && constants.type !== 'oauth2')) {
-		winston.error('[sso-oauth] Please specify an OAuth strategy to utilise (library.js:31)');
 	} else if (!constants.userRoute) {
 		winston.error('[sso-oauth] User Route required (library.js:31)');
 	} else {
@@ -82,61 +53,10 @@
 
 	OAuth.getStrategy = function (strategies, callback) {
 		if (configOk) {
-			passportOAuth = require('passport-oauth')[constants.type === 'oauth' ? 'OAuthStrategy' : 'OAuth2Strategy'];
-
-			if (constants.type === 'oauth') {
-				// OAuth options
-				opts = constants.oauth;
-				opts.callbackURL = nconf.get('url') + '/auth/' + constants.name + '/callback';
-
-				passportOAuth.Strategy.prototype.userProfile = function (token, secret, params, done) {
-					this._oauth.get(constants.userRoute, token, secret, function (err, body/* , res */) {
-						if (err) {
-							return done(err);
-						}
-
-						try {
-							var json = JSON.parse(body);
-							OAuth.parseUserReturn(json, function (err, profile) {
-								if (err) return done(err);
-								profile.provider = constants.name;
-
-								done(null, profile);
-							});
-						} catch (e) {
-							done(e);
-						}
-					});
-				};
-			} else if (constants.type === 'oauth2') {
-				// OAuth 2 options
-				opts = constants.oauth2;
-				opts.callbackURL = nconf.get('url') + '/auth/' + constants.name + '/callback';
-
-				passportOAuth.Strategy.prototype.userProfile = function (accessToken, done) {
-					this._oauth2.get(constants.userRoute, accessToken, function (err, body/* , res */) {
-						if (err) {
-							return done(err);
-						}
-
-						try {
-							var json = JSON.parse(body);
-							OAuth.parseUserReturn(json, function (err, profile) {
-								if (err) return done(err);
-								profile.provider = constants.name;
-
-								done(null, profile);
-							});
-						} catch (e) {
-							done(e);
-						}
-					});
-				};
-			}
 
 			opts.passReqToCallback = true;
 
-			passport.use(constants.name, new passportOAuth(opts, function (req, token, secret, profile, done) {
+			passport.use(constants.name, new Strategy(opts, function (req, token, secret, profile, done) {
 				OAuth.login({
 					oAuthid: profile.id,
 					handle: profile.displayName,
