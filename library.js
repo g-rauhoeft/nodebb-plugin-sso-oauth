@@ -95,7 +95,6 @@
 
 	const OAuth = {};
 	let configOk = false;
-	let opts;
 
 	if (!constants.name) {
 		winston.error('[sso-oauth] Please specify a name for your OAuth provider (library.js:32)');
@@ -108,9 +107,7 @@
 	OAuth.getStrategy = function (strategies, callback) {
 		if (configOk) {
 
-			opts.passReqToCallback = true;
-
-			passport.use(constants.name, new Strategy(opts, function (req, token, secret, profile, done) {
+			passport.use(constants.name, new Strategy(constants.oauth2, function (req, token, secret, profile, done) {
 				OAuth.login({
 					oAuthid: profile.id,
 					handle: profile.displayName,
