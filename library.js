@@ -111,12 +111,12 @@
 		if (configOk) {
 
 			passport.use(constants.name, new Strategy(constants.oauth2, function (req, token, secret, profile, done) {
-				winston.info(JSON.stringify(profile));
+				console.log(JSON.stringify(profile));
 				OAuth.login({
-					oAuthid: profile.id,
-					handle: profile.displayName,
+					oAuthid: profile.sub,
+					handle: profile.preferred_username,
 					email: profile.email,
-					isAdmin: profile.isAdmin,
+					isAdmin: false, //profile.isAdmin,
 				}, function (err, user) {
 					if (err) {
 						return done(err);
@@ -147,7 +147,7 @@
 		// Everything else is optional.
 
 		// Find out what is available by uncommenting this line:
-		// console.log(data);
+		console.log(data);
 
 		var profile = {};
 		profile.id = data.id;
