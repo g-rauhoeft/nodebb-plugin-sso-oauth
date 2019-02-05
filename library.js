@@ -110,7 +110,7 @@
 	OAuth.getStrategy = function (strategies, callback) {
 		if (configOk) {
 
-			passport.use(constants.name, new Strategy(constants.oauth2, function (req, token, secret, profile, done) {
+			passport.use(constants.name, new Strategy(constants.oauth2, function (accessToken, refreshToken, profile, callback) {
 				console.log("Req:", JSON.stringify(req), "Profile", JSON.stringify(profile));
 				OAuth.login({
 					oAuthid: profile.sub,
@@ -123,9 +123,11 @@
 						return done(err);
 					}
 					console.log(user);
-					authenticationController.onSuccessfulLogin(req, user.uid);
+					//authenticationController.onSuccessfulLogin(req, user.uid);
 					done(null, user);
 				});
+			}, function(req, res){
+				console.log("Called next function", req, res);
 			}));
 
 			strategies.push({
