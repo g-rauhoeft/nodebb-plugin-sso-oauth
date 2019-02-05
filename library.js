@@ -111,7 +111,7 @@
 		if (configOk) {
 
 			passport.use(constants.name, new Strategy(constants.oauth2, function (accessToken, refreshToken, profile, callback) {
-				console.log("Req:", JSON.stringify(req), "Profile", JSON.stringify(profile));
+				//console.log("Req:", JSON.stringify(req), "Profile", JSON.stringify(profile));
 				OAuth.login({
 					oAuthid: profile.sub,
 					handle: profile.preferred_username,
