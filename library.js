@@ -14,6 +14,7 @@
 		options.callbackURL = options.callbackURL || '/auth/keycloak/callback';
 		options.scopeSeparator = options.scopeSeparator || ',';
 		options.customHeaders = options.customHeaders || {};
+		options.passReqToCallback = options.passReqToCallback || true;
 
 		if (!options.customHeaders['User-Agent']) {
 			options.customHeaders['User-Agent'] = options.userAgent || 'passport-keycloak';
