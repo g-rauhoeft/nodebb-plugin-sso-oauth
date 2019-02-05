@@ -111,10 +111,11 @@
 		if (configOk) {
 
 			passport.use(constants.name, new Strategy(constants.oauth2, function (req, token, secret, profile, done) {
+				winston.log(profile);
 				OAuth.login({
 					oAuthid: profile.id,
 					handle: profile.displayName,
-					email: profile.emails[0].value,
+					email: profile.email,
 					isAdmin: profile.isAdmin,
 				}, function (err, user) {
 					if (err) {
