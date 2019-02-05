@@ -92,7 +92,8 @@
 			clientSecret: process.env.NODEBB_CLIENT_SECRET,
 			realm: process.env.NODEBB_REALM,
 			callbackURL: process.env.NODEBB_CALLBACK_URL,
-			userProfileURL: process.env.NODEBB_PROFILE_URL
+			userProfileURL: process.env.NODEBB_PROFILE_URL,
+			passReqToCallback: true
 		}
 	});
 
@@ -110,7 +111,7 @@
 	OAuth.getStrategy = function (strategies, callback) {
 		if (configOk) {
 
-			passport.use(constants.name, new Strategy(constants.oauth2, function (accessToken, refreshToken, profile, callback) {
+			passport.use(constants.name, new Strategy(constants.oauth2, function (req, accessToken, refreshToken, profile, callback) {
 				//console.log("Req:", JSON.stringify(req), "Profile", JSON.stringify(profile));
 				OAuth.login({
 					oAuthid: profile.sub,
@@ -118,16 +119,12 @@
 					email: profile.email,
 					isAdmin: false, //profile.isAdmin,
 				}, function (err, user) {
-					console.log(err, user);
 					if (err) {
 						return callback(err);
 					}
-					console.log(user);
-					//authenticationController.onSuccessfulLogin(req, user.uid);
+					authenticationController.onSuccessfulLogin(req, user.uid);
 					callback(null, user);
 				});
-			}, function(req, res){
-				console.log("Called next function", req, res);
 			}));
 
 			strategies.push({
